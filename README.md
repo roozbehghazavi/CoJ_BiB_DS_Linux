@@ -58,13 +58,17 @@ You should now see the lightweight Fluxbox desktop. All subsequent Wine Applicat
 
 ### 5. Install the Dedicated Server Tool
 
-The installation file is available in the `Applications` folder of this repository.
+You can download the official **Call of Juarez: Bound in Blood Dedicated Server** installer from ModDB using the link below:
+👉 [Download CoJ_BiB_DedicatedServer_setup.exe](https://www.moddb.com/games/call-of-juarez-bound-in-blood/downloads/pc-dedicated-server)
 
-Run the installer using Wine from your terminal:
+After downloading, place the file inside the `Applications` folder (or any preferred directory), then run the installer using Wine:
 
 ```bash
 DISPLAY=:99 WINEPREFIX=/root/wine-coj2 wine Applications/CoJ_BiB_DedicatedServer_setup.exe
 ```
+
+This will launch the dedicated server installer within your Wine environment.
+
 
 ### 6. Apply Server List Mod (Optional but Recommended)
 
@@ -236,7 +240,7 @@ DISPLAY=:99 WINEPREFIX=/root/wine-coj2 wine "/root/wine-coj2/drive_c/users/root/
 
 This project is a community effort to preserve the classic CoJ: BiB online experience.
 
-“Back in 2010–2016 we played freely — now we rebuild what was lost.” 🕹️
+“We played freely — now we rebuild what was lost.” 🕹️
 
 | Contributor      | Role                                      |
 |------------------|-------------------------------------------|
