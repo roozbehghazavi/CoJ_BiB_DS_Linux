@@ -62,7 +62,7 @@ You can download the official **Call of Juarez: Bound in Blood Dedicated Server*
 
 👉 [Download Call of Juarez: Bound in Blood Dedicated Server](https://www.moddb.com/games/call-of-juarez-bound-in-blood/downloads/pc-dedicated-server)
 
-After downloading, place the file inside the `Applications` folder (or any preferred directory), then run the installer using Wine:
+After downloading, Unzip it and place the file inside the `Applications` folder (or any preferred directory), then run the installer using Wine:
 
 ```bash
 DISPLAY=:99 WINEPREFIX=/root/wine-coj2 wine Applications/CoJ_BiB_DedicatedServer_setup.exe
