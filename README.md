@@ -85,15 +85,7 @@ SERVER_PATH="/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bou
 cp "$MOD_PATH/engine_x86_ds.dll" "$SERVER_PATH"
 ```
 
-### 7. Install CoJ Server Controller
-
-The installation file is available in the `Applications` folder of this repository. This Applications provides a convenient GUI for managing and launching your server.
-
-```bash
-DISPLAY=:99 WINEPREFIX=/root/wine-coj2 wine Applications/setup_ModsCoJ.exe
-```
-
-### 8. Launch and Stop Scripts
+### 7. Launch and Stop Scripts
 
 You can now start and stop your server environment using the provided scripts:
 
