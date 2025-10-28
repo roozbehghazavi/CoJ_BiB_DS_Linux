@@ -6,7 +6,7 @@ We leverage the power of **Wine** for the Windows compatibility layer, along wit
 
 It also includes optional scripts for **GameRanger** hosting support with automated NAT handling (SNAT).
 
-The installation files for the Dedicated Server Tool (`CoJ_BiB_DedicatedServer_setup.exe`), GameRanger (`GameRangerSetup.exe`), and CoJ Server Controller (`setup_ModsCoJ.exe`) are provided in the `Applications` folder within this repository.
+The installation files for the Dedicated Server Tool (CoJ_BiB_DedicatedServer_setup.exe), GameRanger (GameRangerSetup.exe), and CoJ Server Controller must be placed in the Applications folder of this repository for the scripts to function correctly.
 
 ---
 
