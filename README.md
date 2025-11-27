@@ -111,7 +111,7 @@ chmod +x stop_processes.sh
 
 ### 8. Joining Server
 
-You can join your server by adding your server’s IP:Port to the client server list mod (serverlist.toml). After that, your server will appear in the Multiplayer → LAN menu in the game.
+You can join your server by adding your server’s **IP:Port** to the client server list mod ([serverlist.toml](https://github.com/AlfredoAnonym/COJ-BiB-Server-List-Mod)). After that, your server will appear in the **Multiplayer → LAN** menu in the game.
 
 ## 🚀 GameRanger Hosting Setup (Optional)
 
