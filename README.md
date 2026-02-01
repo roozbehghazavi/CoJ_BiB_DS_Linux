@@ -79,10 +79,10 @@ Replace the original DLL:
 
 ```bash
 # This assumes the mod is extracted to a known location, e.g., Applicationss
-MOD_PATH="Applications/DedicatedServerMod"
+MOD_PATH="/root/CoJ_BiB_DS_Linux/Applications/DedicatedServerMod"
 SERVER_PATH="/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bound in Blood Dedicated Server/"
 
-cp "$MOD_PATH/engine_x86_ds.dll" "$SERVER_PATH"
+cp -r "$MOD_PATH/." "$SERVER_PATH"
 ```
 
 ### 7. Launch and Stop Scripts
