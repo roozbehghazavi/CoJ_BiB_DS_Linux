@@ -1,0 +1,7 @@
+v1.2.0:
+- expanded 16 players slot limit
+v1.1.0:
+- kills counter reset before revenge match
+v1.0.0:
+- bindless listening (should be no problems when hosting server on machine with VPN turned on)
+- server info broadcast changed to unicast (sending serverlist without SNAT and binding to 27632 on player side)
