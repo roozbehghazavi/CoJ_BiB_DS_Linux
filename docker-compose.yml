@@ -1,0 +1,51 @@
+services:
+  coj2-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: coj2-server
+
+    # ── Restart policy ──────────────────────────────────────────
+    restart: unless-stopped
+
+    # ── Ports ───────────────────────────────────────────────────
+    ports:
+      - "6900:6900"           # VNC (TCP)
+      - "27632:27632/udp"     # CoJ game traffic
+      - "27632:27632/tcp"     # CoJ query traffic
+
+    # ── Environment ─────────────────────────────────────────────
+    environment:
+      - DISPLAY=:99
+      - WINEPREFIX=/root/wine-coj2
+      - WINEARCH=win32
+      - WINEDEBUG=-all
+      - VNC_PORT=6900
+      - COJ_PORT=27632
+      - RESOLUTION=1280x1024x24
+      # Set VNC_PASS to protect your VNC session (recommended!)
+      - VNC_PASS=${VNC_PASS:-}
+      # Set AUTO_START=true to launch the controller automatically on boot
+      - AUTO_START=${AUTO_START:-false}
+
+    # ── Volumes ──────────────────────────────────────────────────
+    volumes:
+      # Game files are baked into the image at build time — no bind mount needed.
+      # Only persist server-data (logs, configs you edit at runtime).
+      - ./server-data:/server-data
+
+    # ── Shared memory (helps with Wine GPU / rendering) ─────────
+    shm_size: "256mb"
+
+    # ── Required capabilities for Wine + virtual display ────────
+    cap_add:
+      - SYS_PTRACE   # Wine needs this to inspect its own processes
+
+    # ── Healthcheck (verify VNC port is accepting connections) ───
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "6900"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

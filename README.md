@@ -1,252 +1,213 @@
-# 🎮 Call of Juarez: Bound in Blood — Dedicated Server on Ubuntu (Wine)
+# CoJ:BiB Dedicated Server – Docker Setup
 
-This repository provides a comprehensive guide and a set of scripts to host a Call of Juarez: Bound in Blood Dedicated Server on Ubuntu Linux.
+Runs **Call of Juarez: Bound in Blood Dedicated Server** inside a Docker
+container using Wine, a headless X11 display (Xvfb), Fluxbox window manager,
+and x11vnc for remote GUI access.
 
-We leverage the power of **Wine** for the Windows compatibility layer, along with **Fluxbox**, **Xvfb**, and **x11vnc** to create a stable, headless virtual desktop environment for the server Application.
+```
+Ubuntu host
+└── Docker
+    └── coj2-server container
+        ├── Xvfb  :99  (virtual display)
+        ├── Fluxbox    (window manager)
+        ├── x11vnc     (VNC → port 6900)
+        └── Wine
+            ├── CoJ2Controller.exe   ← you connect to this via VNC
+            └── CoJ2Game_x86_ds.exe  ← controller launches this
+```
 
-It also includes optional scripts for **GameRanger** hosting support with automated NAT handling (SNAT).
-
-The installation files for the Dedicated Server Tool (CoJ_BiB_DedicatedServer_setup.exe), GameRanger (GameRangerSetup.exe), and CoJ Server Controller must be placed in the Applications folder of this repository for the scripts to function correctly.
+**No GUI installer needed.** The pre-installed game folder is copied directly
+into the Wine prefix at build time. Just drop the folders next to the
+Dockerfile, build once, and run.
 
 ---
 
-## 🧱 Requirements
+## Prerequisites (host machine)
 
-- **Operating System:** Ubuntu 20.04 or newer (any Debian-based distribution should work).
-- **Privileges:** Root or sudo access.
-- **Internet Access.**
-- **VNC Client:** RealVNC or any VNC viewer to access the GUI desktop.
+```bash
+# Ubuntu 24/26
+sudo apt update && sudo apt install -y docker.io docker-compose-plugin
+sudo usermod -aG docker $USER   # log out and back in after this
+```
 
 ---
 
-## ⚙️ Step-by-Step Installation
+## Directory layout
 
-### 1. Install Dependencies
+Prepare this structure **before** running `docker compose build`:
 
-Run this script to install all required system packages, including Wine, Xvfb, Fluxbox, and VNC utilities.
+```
+coj2-docker/
+├── Dockerfile
+├── docker-compose.yml
+├── .env                          ← create this (see below)
+│
+├── CoJ_BiB_DS_Linux/
+│   └── Applications/
+│       ├── CoJ2 Controller/      ← controller GUI (CoJ2Controller.exe, etc.)
+│       └── DedicatedServerMod/   ← engine_x86_ds.dll patch + any other mod files
+│
+├── CoJ_BiB_Server/               ← your pre-installed dedicated server folder
+│   │                                (the output of the Windows installer)
+│   ├── CoJ2Game_x86_ds.exe
+│   ├── engine_x86_ds.dll
+│   └── ...
+│
+├── scripts/
+│   ├── entrypoint.sh
+│   ├── launch_controller.sh
+│   └── stop_processes.sh
+├── config/
+│   ├── supervisord.conf
+│   └── fluxbox-menu
+└── server-data/                  ← persisted logs / server configs (auto-created)
+```
+
+### Where to get the pre-installed folder
+
+Install the dedicated server once on a Windows machine (or via Wine on your
+current setup), then copy the output folder:
+
+```
+C:\Program Files (x86)\Techland\Call of Juarez - Bound in Blood Dedicated Server\
+```
+
+Rename/copy that folder to `CoJ_BiB_Server/` next to the Dockerfile.
+The Dockerfile copies it straight into the same path inside the Wine prefix.
+
+---
+
+## Configuration (.env file)
+
+Create a `.env` file next to `docker-compose.yml`:
+
+```env
+# VNC password (strongly recommended on any public-facing server)
+VNC_PASS=changeme
+
+# Set to "true" to auto-launch the CoJ2 Controller when the container starts
+AUTO_START=false
+```
+
+---
+
+## Build & run
 
 ```bash
-chmod +x install_dependencies.sh
-./install_dependencies.sh
+# 1. Build the image
+#    First build takes ~15 min (winetricks installs dotnet40, VC runtimes, etc.)
+#    Subsequent builds use the cache and are fast.
+docker compose build
+
+# 2. Start the container
+docker compose up -d
+
+# 3. Connect via VNC
+#    <your-server-ip>:6900
+#    You'll see the Fluxbox desktop. Right-click → Launch Controller.
 ```
 
-### 2. Setup Wine Environment
+---
 
-Initialize your Wine prefix and install essential components required by the server (DirectX, .NET, VC Redistributables, etc.).
+## Launching the server
+
+Once connected via VNC, either:
+
+- **Right-click** the desktop → **Launch Controller**
+- Or run from the host:
 
 ```bash
-chmod +x setup_wine.sh
-./setup_wine.sh
+docker exec coj2-server /scripts/launch_controller.sh
 ```
 
-### 3. Start the Virtual Desktop
+The controller GUI opens in the VNC window. Use it exactly as you would on
+Windows — it handles starting/stopping `CoJ2Game_x86_ds.exe` internally.
 
-Launch a stable, minimal desktop environment using Xvfb (the virtual display), x11vnc (the VNC server), and Fluxbox (the window manager).
+To auto-launch on every container start, set `AUTO_START=true` in `.env` and
+restart the container.
+
+---
+
+## Day-to-day commands
+
+| Action | Command |
+|--------|---------|
+| Start container | `docker compose up -d` |
+| Stop container | `docker compose down` |
+| View logs | `docker compose logs -f` |
+| Open a shell | `docker exec -it coj2-server bash` |
+| Launch controller | `docker exec coj2-server /scripts/launch_controller.sh` |
+| Stop game procs | `docker exec coj2-server /scripts/stop_processes.sh` |
+| Restart container | `docker compose restart` |
+
+---
+
+## Updating game files
+
+Because the game files are **baked into the image** (not a bind mount), any
+update to `CoJ_BiB_Server/` or `CoJ_BiB_DS_Linux/` requires a rebuild:
 
 ```bash
-chmod +x start_display.sh
-./start_display.sh
+# After updating files on the host:
+docker compose down
+docker compose build
+docker compose up -d
 ```
 
-### 4. Connect to Your Virtual Desktop
+Only the `COPY` layers rebuild — Wine prefix layers are cached and reused.
 
-Use your preferred VNC client (like RealVNC Viewer) and connect to the VNC endpoint:
+---
 
-`vnc://<your-server-ip>:6900`
+## Ports
 
-You should now see the lightweight Fluxbox desktop. All subsequent Wine Applicationss will run inside this virtual environment.
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| 6900 | TCP | VNC remote desktop |
+| 27632 | UDP | CoJ game traffic |
+| 27632 | TCP | CoJ query traffic |
 
-### 5. Install the Dedicated Server Tool
-
-You can download the official **Call of Juarez: Bound in Blood Dedicated Server** installer from ModDB using the link below:
-
-👉 [Download Call of Juarez: Bound in Blood Dedicated Server](https://www.moddb.com/games/call-of-juarez-bound-in-blood/downloads/pc-dedicated-server)
-
-After downloading, Unzip it and place the file inside the `Applications` folder (or any preferred directory), then run the installer using Wine:
+Open on your firewall:
 
 ```bash
-DISPLAY=:99 WINEPREFIX=/root/wine-coj2 wine Applications/CoJ_BiB_DedicatedServer_setup.exe
+sudo ufw allow 6900/tcp
+sudo ufw allow 27632/udp
+sudo ufw allow 27632/tcp
 ```
 
-This will launch the dedicated server installer within your Wine environment.
+---
 
+## Persistent data
 
-### 6. Apply Server List Mod (Optional but Recommended)
+| What | Where (host) |
+|------|-------------|
+| Game files | Baked into the image at build time |
+| Server logs / configs | `./server-data/` (bind mount, survives restarts) |
 
-To ensure your server appears correctly in the in-game server list, you need to replace the original engine_x86_ds.dll.
+---
 
-Replace the original DLL:
+## Troubleshooting
 
+**VNC shows a black screen**
+Wait 5–10 seconds; Xvfb may still be initialising. Check:
 ```bash
-# This assumes the mod is extracted to a known location, e.g., Applicationss
-MOD_PATH="/root/CoJ_BiB_DS_Linux/Applications/DedicatedServerMod"
-SERVER_PATH="/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bound in Blood Dedicated Server/"
-
-cp -r "$MOD_PATH/." "$SERVER_PATH"
+docker compose logs coj2-server
 ```
 
-### 7. Launch and Stop Scripts
-
-You can now start and stop your server environment using the provided scripts:
-
-| Script                | Description                                      |
-|-----------------------|--------------------------------------------------|
-| launch_controller.sh | Launches the CoJ2 Server Controller GUI under Wine. |
-| stop_processes.sh      | Stops all related services. |
-
-
-To Launch:
-
+**Controller window doesn't appear**
+Make sure your VNC client is connected first, then launch the controller.
+Check the log inside the container:
 ```bash
-chmod +x launch_controller.sh
-./launch_controller.sh
+docker exec coj2-server cat /var/log/coj2controller.log
 ```
 
-To Stop:
-
+**Wine crashes / DLL errors**
+Exec into the container and run winetricks manually:
 ```bash
-chmod +x stop_processes.sh
-./stop_processes.sh
+docker exec -it coj2-server bash
+DISPLAY=:99 winetricks vcrun2015
 ```
 
-### 8. Joining Server
-
-You can join your server by adding your server’s **IP:Port** to the client server list mod ([serverlist.toml](https://github.com/AlfredoAnonym/COJ-BiB-Server-List-Mod)). After that, your server will appear in the **Multiplayer → LAN** menu in the game.
-
-## 🚀 GameRanger Hosting Setup (Optional)
-
-These steps are necessary if you want to host your server through GameRanger.
-
-### A. Install GameRanger
-
-The installation file is available in the `Applications` folder of this repository.
-
-```bash
-DISPLAY=:99 WINEPREFIX=/root/wine-coj2 wine Applications/GameRangerSetup.exe
-```
-
-### B. Rename Server Executable
-
-GameRanger requires the dedicated server executable to have a specific file name.
-
-```bash
-cd "/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bound in Blood Dedicated Server"
-
-# Create a copy with the name GameRanger expects
-cp CoJ2Game_x86_ds.exe CoJBiBGame_x86.exe
-```
-
-⚠️ Note: Keep both files! CoJ2Game_x86_ds.exe is used by the CoJ Server Controller, and CoJBiBGame_x86.exe is used by GameRanger.
-
-### C. Enable/Disable SNAT
-
-To make your GameRanger-hosted server reachable, you need to toggle iptables SNAT (Source NAT) rules.
-
-| Script            | Function                                      |
-|-------------------|-----------------------------------------------|
-| enable_snat.sh   | Enables SNAT rules for GameRanger visibility. Run this before hosting. |
-| disable_snat.sh  | Disables the SNAT rules. Run this after hosting. |
-
-```bash
-# To enable for hosting
-./enable_snat.sh
-
-# To disable when finished
-./disable_snat.sh
-```
-
-### D. Launch and Stop Scripts
-
-You can now start and stop GameRanger using the provided scripts:
-
-| Script                | Description                                      |
-|-----------------------|--------------------------------------------------|
-| launch_gameranger.sh | Launches GameRanger under Wine. |
-| stop_processes.sh      | Stops all related services. |
-
-
-To Launch:
-
-```bash
-chmod +x launch_gameranger.sh
-./launch_gameranger.sh
-```
-
-To Stop:
-
-```bash
-chmod +x stop_processes.sh
-./stop_processes.sh
-```
-
-## 📂 File and Architecture Overview
-
-### Script Overview
-
-| Script                        | Description                                      |
-|-------------------------------|--------------------------------------------------|
-| install_dependencies.sh      | Installs system packages: Wine, Fluxbox, Xvfb, x11vnc, and base tools. |
-| setup_wine.sh                | Configures the Wine prefix and installs necessary components. |
-| start_display.sh             | Starts the virtual display (Xvfb), Fluxbox (window manager), and x11vnc (VNC server). |
-| stop_display.sh             | Stops the virtual display (Xvfb), Fluxbox (window manager), and x11vnc (VNC server). |
-| enable_snat.sh / disable_snat.sh | Toggles SNAT rules for GameRanger visibility. |
-| launch_controller.sh         | Launches the CoJ2 Server Controller GUI. |
-| launch_gameranger.sh       | Launches GameRanger under Wine (optional utility). |
-| stop_processes.sh              | Stops all related services. |
-
-### Architecture Overview
-
-```mermaid
-graph LR
-    A[Ubuntu Server] --> B(Xvfb: Virtual Display);
-    B --> C(Fluxbox: Window Manager);
-    C --> D(x11vnc: Remote GUI Access);
-    B --> E(Wine: Windows Compatibility Layer);
-    E --> F(CoJ2 Dedicated Server);
-    E --> G(CoJ Server Controller);
-    E --> H(GameRanger: Optional);
-```
-
-## 🧰 Troubleshooting
-
-### Firewall Configuration
-
-Open the following UDP ports on your server firewall (e.g., using ufw):
-
-| Service          | Port  | Protocol |
-|------------------|-------|----------|
-| Dedicated Server | 27632 | UDP     |
-| GameRanger       | 16000 | UDP     |
-| VNC Access       | 6900  | TCP     |
-
-### Manually Running an Executable
-
-Once Wine is configured, you can manually execute any Windows Application in the virtual environment:
-
-```bash
-DISPLAY=:99 WINEPREFIX=/root/wine-coj2 wine "<path-to-exe>"
-```
-
-Example (Running GameRanger manually):
-
-```bash
-DISPLAY=:99 WINEPREFIX=/root/wine-coj2 wine "/root/wine-coj2/drive_c/users/root/AppData/Roaming/GameRanger/GameRanger/GameRanger.exe"
-```
-
-## ❤️ Credits and License
-
-This project is a community effort to preserve the classic CoJ: BiB online experience.
-
-“We played freely — now we rebuild what was lost.” 🕹️
-
-| Contributor      | Role                                      |
-|------------------|-------------------------------------------|
-| Roozbeh Ghazavi | Project Lead & Scripting                 |
-| mx98919, Alfredo Anonym, kris[RR]  | Troubleshooting and Community Support and Script Assistance  |
-| victormvy       | CoJ Server Controller Development        |
-
-
-
-### 📜 License
-
-This project is released under the MIT License. Feel free to modify, share, and improve this guide and its scripts.
+**Game server not visible to players**
+- Confirm UDP 27632 is open on host firewall AND your cloud security group.
+- Ensure the server list mod (`engine_x86_ds.dll`) was applied — the Dockerfile
+  does this automatically from `DedicatedServerMod/`.

@@ -1,0 +1,9 @@
+[begin] (CoJ2 Server)
+  [exec] (Launch Controller)  {/scripts/launch_controller.sh}
+  [exec] (Stop All Processes) {/scripts/stop_processes.sh}
+  [separator]
+  [exec] (Terminal)           {xterm}
+  [exec] (File Manager)       {xterm -e mc}
+  [separator]
+  [exec] (Restart Fluxbox)    {fluxbox-remote restart}
+[end]
