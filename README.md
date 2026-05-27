@@ -24,10 +24,7 @@ it's just a folder of files that Wine runs directly.
 
 ## Prerequisites (host machine)
 
-```bash
-sudo apt update && sudo apt install -y docker.io docker-compose-plugin
-sudo usermod -aG docker $USER   # log out and back in
-```
+[Install Docker Engine](https://docs.docker.com/engine/install/ubuntu/)
 
 ---
 
