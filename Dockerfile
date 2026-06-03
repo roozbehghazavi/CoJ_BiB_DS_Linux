@@ -160,4 +160,37 @@ EXPOSE 6900
 EXPOSE 27632/udp
 EXPOSE 27632/tcp
 
+# Declare volumes AFTER files are copied — if declared before, Docker
+# initialises the volume empty and wipes the files that were copied in.
+VOLUME ["/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bound in Blood Dedicated Server"]
+VOLUME ["/root/CoJ_BiB_DS_Linux/Applications/CoJ2 Controller"]
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+
+# ── STAGE 3: flatten ────────────────────────────────────────────
+# Each RUN in stage 2 created a layer. Even files deleted in later
+# RUN steps are still stored in earlier layers and bloat the image.
+# Copying everything from scratch into a single layer erases all
+# that history — only the final filesystem state survives.
+FROM scratch AS final
+
+COPY --from=runtime / /
+
+# Re-declare ENV, EXPOSE, ENTRYPOINT — they don't carry over from COPY
+ENV DISPLAY=:99
+ENV WINEPREFIX=/root/wine-coj2
+ENV WINEARCH=win32
+ENV WINEDEBUG=-all
+ENV XDG_RUNTIME_DIR=/tmp/runtime-root
+ENV VNC_PORT=6900
+ENV COJ_PORT=27632
+ENV RESOLUTION=1280x1024x24
+
+EXPOSE 6900
+EXPOSE 27632/udp
+EXPOSE 27632/tcp
+
+VOLUME ["/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bound in Blood Dedicated Server/CoJ2/Data/MapsNet"]
+
 ENTRYPOINT ["/entrypoint.sh"]
