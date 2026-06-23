@@ -162,3 +162,15 @@ Check: `docker compose logs coj2-server`
 **Game not visible to players**
 - Confirm UDP 27632 is open on firewall + cloud security group.
 - Verify the mod was applied: `docker exec coj2-server ls "/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bound in Blood Dedicated Server/"`
+
+**If build fails with "script not found" after COPY**
+```bash
+# Fix Windows line endings (CRLF → LF) — common when repo cloned on Windows
+cd /home/ubuntu/CoJ_BiB_DS_Linux
+find scripts -type f -name "*.sh" -exec sed -i 's/\r$//' {} \;
+sed -i 's/\r$//' entrypoint.sh 2>/dev/null || true
+chmod +x scripts/*.sh
+
+# Then rebuild
+docker compose build --no-cache
+```
