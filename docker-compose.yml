@@ -26,9 +26,9 @@ services:
 
     volumes:
       - ./volumes/CustomMaps:/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bound in Blood Dedicated Server/CoJ2/Data/MapsNet
-
-      # Logs — always handy to have on the host
+      - ./Applications/CoJ2 Controller:/root/CoJ_BiB_DS_Linux/Applications/CoJ2 Controller
       - ./volumes/logs:/var/log
+      - ./volumes/Configs/DedicatedServerSettings.ini:/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bound in Blood Dedicated Server/CoJ2/DedicatedServerSettings.ini
 
     shm_size: "256mb"
     cap_add:
