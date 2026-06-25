@@ -160,11 +160,6 @@ EXPOSE 6900
 EXPOSE 27632/udp
 EXPOSE 27632/tcp
 
-# Declare volumes AFTER files are copied — if declared before, Docker
-# initialises the volume empty and wipes the files that were copied in.
-VOLUME ["/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bound in Blood Dedicated Server"]
-VOLUME ["/root/CoJ_BiB_DS_Linux/Applications/CoJ2 Controller"]
-
 ENTRYPOINT ["/entrypoint.sh"]
 
 
@@ -190,7 +185,5 @@ ENV RESOLUTION=1280x1024x24
 EXPOSE 6900
 EXPOSE 27632/udp
 EXPOSE 27632/tcp
-
-VOLUME ["/root/wine-coj2/drive_c/Program Files/Techland/Call of Juarez - Bound in Blood Dedicated Server/CoJ2/Data/MapsNet"]
 
 ENTRYPOINT ["/entrypoint.sh"]
