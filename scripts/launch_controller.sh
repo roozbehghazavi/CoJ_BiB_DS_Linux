@@ -7,6 +7,7 @@
 export WINEPREFIX="${WINEPREFIX:-/root/wine-coj2}"
 export DISPLAY="${DISPLAY:-:99}"
 export WINEDEBUG=-all
+export WINEDLLOVERRIDES="version=n,b"
 
 CONTROLLER="/root/CoJ_BiB_DS_Linux/Applications/CoJ2 Controller/CoJ2Controller.exe"
 
