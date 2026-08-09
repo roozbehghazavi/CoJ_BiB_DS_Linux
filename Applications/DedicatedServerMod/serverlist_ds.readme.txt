@@ -1,0 +1,8 @@
+Installation:
+
+
+1. Backup game files:
+    - CoJ2_x86_ds.dll
+    - engine_x86_ds.dll
+2. Extract all modded files from .zip into game directory and replace existing ones.
+3. To change default settings modify serverlist_ds.toml.

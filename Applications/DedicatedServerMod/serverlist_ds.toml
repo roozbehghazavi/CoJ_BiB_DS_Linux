@@ -1,0 +1,38 @@
+[miscellaneous]
+# Logging level. Possible values: 'debug' or 'info' or 'warning' or 'error' or 'none'
+log_level = 'error'
+
+
+[gamespy]
+enabled = true
+game_name = "coj2"
+game_secret_key = "H0bx87"
+# Domain for all gamespy services
+# Master server addresses can be overridden in subsequent options
+# for testing or when you want to use domain-less gamespy master servers
+domain = "openspy.net"
+
+
+[gamespy.natneg]
+# Detect NAT type on server/game startup and log it into .log file
+# Set to true if you want to check your NAT type then set to false
+nat_detection_enabled = false
+# NATNEG servers. Orders of servers matters
+# Option is used for overriding domain NATNEG servers
+# server1_address = "89.2.5.35:27901"
+# server2_address = "189.200.178.97:27901"
+# server3_address = "34.145.210.221:27901"
+
+
+[gamespy.server]
+# Master server ip for server
+# option is used for overriding domain master server
+# server_address = "89.2.5.35:27900"
+# Disabling NAT traversal is recommended if all required ports are forwarded
+# when server is accessible by -join <public_ip>:<port>
+# NAT negotiated servers are requiring more time to establish connection
+# Set this option to true if you have private ip
+nat_traversal_enabled = false
+# Source port for server reporting service (outgoing connection)
+# Should be set to 0 which means random port
+query_port = 0

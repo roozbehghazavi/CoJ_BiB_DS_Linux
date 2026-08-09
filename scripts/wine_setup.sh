@@ -39,8 +39,8 @@ wine reg add "HKCU\\Software\\Wine\\Direct3D" \
     /v DirectDrawRenderer /t REG_SZ /d opengl /f || true
 wineserver --wait
 
-echo "[wine_setup] Installing dotnet40..."
-winetricks -q dotnet40 || true
+echo "[wine_setup] Installing dotnet48..."
+winetricks -q dotnet48 || true
 wineserver --wait
 
 echo "[wine_setup] All done."
