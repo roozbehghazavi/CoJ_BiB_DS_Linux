@@ -30,7 +30,7 @@ echo "🔧 Installing required Wine components..."
 # mfc42         - Requiered for Gameranger Installation
 # ---------------------------------------------------------------
 winetricks -q \
-    dotnet40 \
+    dotnet48 \
     vcrun2005 vcrun2008 vcrun2010 vcrun2012 vcrun2013 vcrun2015 \
     d3dx9_43 d3dcompiler_43 \
     corefonts mfc42 \
